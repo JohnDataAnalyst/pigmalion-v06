@@ -1,14 +1,21 @@
-# Virtual environment
+# ─── Environnements Python ──────────────────────────────────
 venv/
-.venv/
-
-# Python
 __pycache__/
-*.py[cod]
-*.env
-*.log
+*.pyc
 
-# Node / Front
-node_modules/
-build/
-.env.local
+# ─── Variables d’environnement sensibles ────────────────────
+*.env
+backend/.env10
+frontend_react/.env
+
+# ─── Node.js / React ───────────────────────────────────────
+frontend_react/node_modules/
+frontend_react/build/
+package-lock.json
+
+# ─── Modèles Hugging Face (trop volumineux) ────────────────
+models/
+
+# ─── Fichiers système ─────────────────────────────────────
+.DS_Store
+Thumbs.db
