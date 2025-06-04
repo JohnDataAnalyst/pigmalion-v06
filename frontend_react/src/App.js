@@ -1,8 +1,7 @@
 // src/App.js
 import React, { useState } from 'react';
 import './App.css';
-import logoPigmalion from './assets/logo-pigmalion.png'; 
-// ↪ Assurez-vous d’avoir placé votre logo dans src/assets/logo-pigmalion.png
+import logoPigmalion from './assets/logo-pigmalion.png';
 
 function App() {
   const [url, setUrl] = useState('');
@@ -35,46 +34,51 @@ function App() {
 
   return (
     <div className="App">
-      {/* 1. En-tête / logo */}
+      {/* 1. En-tête / Logo */}
       <header className="App-header">
         <img src={logoPigmalion} alt="Logo Pigmalion" className="App-logo" />
       </header>
 
-      {/* 2. Section “Track your post” et “Trends” */}
-      <section className="App-trendbar">
-        <div className="track-your-post">
-          <span className="title-small">
-            Track&nbsp;<span className="highlight">your</span>&nbsp;post
-          </span>
-          <div className="arrow-down">&#x2193;</div>
-        </div>
-        <div className="trends">
-          <span className="title-small">
-            Tren<span className="highlight">d</span>s
-          </span>
-          <div className="arrow-down arrow-green">&#x2193;</div>
-        </div>
-      </section>
+      {/* 2+3. “Track your post” + Barre d’entrée alignées sous deux colonnes */}
+      <div className="App-top-row">
+        <div className="left-column">
+          <div className="track-your-post">
+            <span className="title-small">
+              Track&nbsp;<span className="highlight">your</span>&nbsp;post
+            </span>
+            <div className="arrow-down">&#x2193;</div>
+          </div>
 
-      {/* 3. Barre d’entrée d’URL */}
-      <section className="App-inputbar">
-        <input
-          type="text"
-          placeholder="https://bsky.app/profile/…/post/…"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="url-input"
-        />
-        <button
-          className="btn-analyze"
-          onClick={handleAnalyze}
-          disabled={loading}
-        >
-          {loading ? 'Chargement…' : 'Analyser'}
-        </button>
-      </section>
+          <div className="App-inputbar">
+            <input
+              type="text"
+              placeholder="https://bsky.app/profile/…/post/…"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="url-input"
+            />
+            <button
+              className="btn-analyze"
+              onClick={handleAnalyze}
+              disabled={loading}
+            >
+              {loading ? 'Chargement…' : 'Analyser'}
+            </button>
+          </div>
+        </div>
 
-      {/* 4. Zone d’affichage du texte du post */}
+        <div className="right-column">
+          <div className="trends">
+            <span className="title-small">
+              Tren<span className="highlight">d</span>s
+            </span>
+            <div className="arrow-down arrow-green">&#x2193;</div>
+          </div>
+          {/* Vous pouvez ajouter d’autres éléments sous “Trends” ici */}
+        </div>
+      </div>
+
+      {/* 4. Zone d’affichage du contenu du post */}
       <section className="App-postcontent">
         {error && <div className="error-message">{error}</div>}
         {postData ? (
@@ -82,11 +86,13 @@ function App() {
             {postData.out_post_text || 'Le post est vide.'}
           </div>
         ) : (
-          <div className="post-placeholder">Ici s’affichera le texte du post</div>
+          <div className="post-placeholder">
+            Ici s’affichera le texte du post
+          </div>
         )}
       </section>
 
-      {/* 5. Ligne de métriques : comments, reposts, likes */}
+      {/* 5. Ligne de métriques (Comments, Reposts, Likes) */}
       <section className="App-metrics">
         <div className="metric-card">
           <div className="metric-value">
