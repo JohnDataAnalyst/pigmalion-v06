@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import './App.css';
 import logoPigmalion from './assets/logo-pigmalion.png'; 
 // ↪ Assurez-vous d’avoir placé votre logo dans src/assets/logo-pigmalion.png
-//    (vous pouvez adapter le nom / le chemin si besoin)
 
 function App() {
   const [url, setUrl] = useState('');
@@ -18,8 +17,9 @@ function App() {
     setPostData(null);
 
     try {
-      // Adaptez l’URL de votre back si nécessaire
-      const response = await fetch(`http://localhost:8000/analyze?url=${encodeURIComponent(url)}`);
+      const response = await fetch(
+        `http://localhost:8000/analyze?url=${encodeURIComponent(url)}`
+      );
       if (!response.ok) {
         const { detail } = await response.json();
         throw new Error(detail || 'Erreur inconnue');
@@ -35,24 +35,28 @@ function App() {
 
   return (
     <div className="App">
-      {/* 1. EN-TÊTE / LOGO */}
+      {/* 1. En-tête / logo */}
       <header className="App-header">
         <img src={logoPigmalion} alt="Logo Pigmalion" className="App-logo" />
       </header>
 
-      {/* 2. SECTION “Track your post” et “Trends” */}
+      {/* 2. Section “Track your post” et “Trends” */}
       <section className="App-trendbar">
         <div className="track-your-post">
-          <span className="title-small">Track&nbsp;<span className="highlight">your</span>&nbsp;post</span>
+          <span className="title-small">
+            Track&nbsp;<span className="highlight">your</span>&nbsp;post
+          </span>
           <div className="arrow-down">&#x2193;</div>
         </div>
         <div className="trends">
-          <span className="title-small">Tren<span className="highlight">d</span>s</span>
+          <span className="title-small">
+            Tren<span className="highlight">d</span>s
+          </span>
           <div className="arrow-down arrow-green">&#x2193;</div>
         </div>
       </section>
 
-      {/* 3. BARRE D’ENTRÉE D’URL */}
+      {/* 3. Barre d’entrée d’URL */}
       <section className="App-inputbar">
         <input
           type="text"
@@ -70,7 +74,7 @@ function App() {
         </button>
       </section>
 
-      {/* 4. ZONE D’AFFICHAGE DU TEXTE DU POST */}
+      {/* 4. Zone d’affichage du texte du post */}
       <section className="App-postcontent">
         {error && <div className="error-message">{error}</div>}
         {postData ? (
@@ -82,7 +86,7 @@ function App() {
         )}
       </section>
 
-      {/* 5. LIGNE DE MÉTRIQUES (comment, repost, like) */}
+      {/* 5. Ligne de métriques : comments, reposts, likes */}
       <section className="App-metrics">
         <div className="metric-card">
           <div className="metric-value">

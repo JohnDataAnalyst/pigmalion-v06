@@ -1,11 +1,15 @@
 /* src/App.css */
 
+/* ──────────────────────────────────────────────────────────────
+   Styles globaux
+────────────────────────────────────────────────────────────── */
 .App {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f8f8f8;
   color: #222;
   margin: 0;
   padding: 0;
+  min-height: 100vh;
 }
 
 /* 1. Header avec logo */
@@ -26,33 +30,33 @@
   display: flex;
   justify-content: space-between;
   margin: 20px;
+  gap: 20px;
 }
 
 .track-your-post,
 .trends {
   background-color: #ffffff;
   flex: 1;
-  margin: 0 10px;
   padding: 10px 0;
   border: 1px solid #ddd;
   text-align: center;
   position: relative;
+  border-radius: 4px;
 }
 
-.track-your-post {
-  margin-left: 0;
-}
-.trends {
-  margin-right: 0;
-}
-
-.title-small {
+.track-your-post .title-small,
+.trends .title-small {
   font-size: 14px;
   color: #333;
 }
 
-.highlight {
-  color: #e74c3c; /* un rouge/orangé pour mettre en valeur */
+.track-your-post .highlight {
+  color: #e74c3c; /* rouge/orangé */
+  font-weight: bold;
+}
+
+.trends .highlight {
+  color: #e74c3c;
   font-weight: bold;
 }
 
@@ -85,6 +89,7 @@
 
 .url-input:focus {
   border-color: #27ae60;
+  box-shadow: 0 0 5px rgba(39, 174, 96, 0.5);
 }
 
 .btn-analyze {
