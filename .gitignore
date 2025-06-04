@@ -1,0 +1,14 @@
+# Virtual environment
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.env
+*.log
+
+# Node / Front
+node_modules/
+build/
+.env.local
