@@ -231,36 +231,30 @@ body {
   margin-top: 5px;
 }
 
-/* ─── 8. Info compte ─────────────────────────────────────────── */
-.info-card {
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  padding: 20px;
-  width: 100%;
-  box-sizing: border-box;
+/* ─── Info-compte : mini-cartes compactes ────────────────────── */
+.info-metrics{
+  display:flex;
+  justify-content:center;
+  gap:16px;          /* écart un peu plus serré */
+  flex-wrap:nowrap;  /* reste sur une seule ligne */
 }
-.info-card-title {
-  margin: 0 0 16px;
-  font-size: 18px;
-  text-align: center;
-  color: #222;
+
+.info-metrics .metric-card{
+  width: 96px;       /* plus étroit qu'avant (120 → 96) */
+  padding: 10px 6px; /* moins de padding interne */
 }
-.info-grid {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  row-gap: 12px;
-  column-gap: 20px;
+
+.info-metrics .metric-value{
+  font-size: 20px;   /* valeur légèrement plus petite (28 → 20) */
 }
-.info-label {
-  font-weight: 600;
-  color: #555;
-  text-align: right;
+
+/* si besoin, réduis aussi la taille du label : */
+/*
+.info-metrics .metric-label{
+  font-size: 12px;
 }
-.info-value {
-  color: #222;
-  text-align: left;
-}
+*/
+
 
 /* ─── 9. Charts ─────────────────────────────────────────────── */
 .chart-wrapper { width: 100%; padding: 20px; box-sizing: border-box; }
