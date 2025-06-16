@@ -133,7 +133,6 @@ body {
 .BLOCL3_DATA_POST,
 .BLOCL4_DATA_COMPTE,
 .BLOCL5_SINGLE_TOXICITE,
-.BLOCL6_SINGLE_SENTIMENTS,
 .BLOCL7_SINGLE_BOT_DETECTION,
 .BLOCR4_TRENDS_SENTIMENTS,
 .BLOCR5_FILTRE_TRENDS_CATEGORIES,
@@ -141,6 +140,12 @@ body {
 .BLOCR7_TRENDS_BOT_DETECTION {
   height: 227px;
 }
+
+/*  ►►  MODIF : plus de place pour le radar des émotions  ◄◄  */
+.BLOCL6_SINGLE_SENTIMENTS {
+  height: 300px;   /* anciennement : 227px */
+}
+
 .BLOCR3_TRENDS_LISTE_KEYWORDS {
   height: 352.5px;
 }
@@ -257,43 +262,12 @@ body {
   text-align: left;
 }
 
+/* ─── 9. Charts ─────────────────────────────────────────────── */
+.chart-wrapper { width: 100%; padding: 20px; box-sizing: border-box; }
+.chart-title   { font-size: 16px; margin-bottom: 10px; color: #222; text-align: center; }
+.chart-placeholder { color: #aaa; font-style: italic; text-align: center; }
 
-.chart-wrapper {
-  width: 100%;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.chart-title {
-  font-size: 16px;
-  margin-bottom: 10px;
-  color: #222;
-  text-align: center;
-}
-
-.chart-bar {
-  width: 100%;
-  height: 20px;
-  background-color: #eee;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.chart-bar-inner {
-  height: 100%;
-  background-color: #e74c3c;
-  transition: width 0.5s ease;
-}
-
-.chart-value {
-  text-align: center;
-  font-size: 14px;
-  color: #444;
-}
-
-.chart-placeholder {
-  color: #aaa;
-  font-style: italic;
-  text-align: center;
-}
+/* barre de toxicité */
+.chart-bar        { width: 100%; height: 20px; background-color: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
+.chart-bar-inner  { height: 100%; background-color: #e74c3c; transition: width 0.5s ease; }
+.chart-value      { text-align: center; font-size: 14px; color: #444; }
