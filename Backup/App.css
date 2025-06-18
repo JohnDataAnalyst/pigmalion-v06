@@ -1,0 +1,267 @@
+/* ─── Reset / Base ─────────────────────────────────────────────── */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.App {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "header header"
+    "sub-left sub-right"
+    "body body";
+  gap: 20px;
+  padding: 80px;
+  background-color: #ffffff;
+  color: #222;
+  box-sizing: border-box;
+}
+
+/* ─── 1. Logo ───────────────────────────────────────────────────── */
+.HEADER {
+  grid-area: header;
+  text-align: center;
+  padding: 20px;
+}
+.HEADER .App-logo {
+  max-height: 180px;
+  object-fit: contain;
+}
+
+/* ─── 2. Sous-headers ───────────────────────────────────────────── */
+.HEADER_SUB_LEFT,
+.HEADER_SUB_RIGHT {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: center;
+  padding-bottom: 10px;
+}
+
+.HEADER_SUB_LEFT {
+  grid-area: sub-left;
+}
+.HEADER_SUB_RIGHT {
+  grid-area: sub-right;
+}
+
+.title-small {
+  font-size: 22px;
+  color: #333;
+  font-weight: normal;
+  position: relative;
+  margin-bottom: 5px;
+}
+
+.HEADER_SUB_LEFT .highlight {
+  color: #F18686;
+  font-weight: bold;
+}
+.HEADER_SUB_RIGHT .highlight {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.HEADER_SUB_LEFT::after,
+.HEADER_SUB_RIGHT::after {
+  content: '↡';
+  font-size: 20px;
+  margin-top: 4px;
+  display: block;
+}
+.HEADER_SUB_LEFT::after {
+  color: #F18686;
+}
+.HEADER_SUB_RIGHT::after {
+  color: #27ae60;
+}
+
+/* ─── 3. Corps en 2 colonnes ───────────────────────────────────── */
+.App-body {
+  grid-area: body;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  overflow-y: auto;
+}
+.left-column,
+.right-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  width: 644px;
+}
+
+/* ─── 4. Blocs standards ───────────────────────────────────────── */
+.BLOCL1_URL,
+.BLOCL2_TEXT,
+.BLOCL3_DATA_POST,
+.BLOCL4_DATA_COMPTE,
+.BLOCL5_SINGLE_TOXICITE,
+.BLOCL6_SINGLE_SENTIMENTS,
+.BLOCL7_SINGLE_BOT_DETECTION,
+.BLOCR1_TRENDS_FILTRE_DATE,
+.BLOCR2_TRENDS_NOMBRE_POST,
+.BLOCR3_TRENDS_LISTE_KEYWORDS,
+.BLOCR4_TRENDS_SENTIMENTS,
+.BLOCR5_FILTRE_TRENDS_CATEGORIES,
+.BLOCR6_TRENDS_TOXICITE,
+.BLOCR7_TRENDS_BOT_DETECTION {
+  box-sizing: border-box;
+  width: 100%;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 20px;
+}
+
+/* Hauteurs fixes */
+.BLOCL1_URL,
+.BLOCR1_TRENDS_FILTRE_DATE,
+.BLOCR2_TRENDS_NOMBRE_POST {
+  height: 101.5px;
+}
+.BLOCL2_TEXT,
+.BLOCL3_DATA_POST,
+.BLOCL4_DATA_COMPTE,
+.BLOCL5_SINGLE_TOXICITE,
+.BLOCL7_SINGLE_BOT_DETECTION,
+.BLOCR4_TRENDS_SENTIMENTS,
+.BLOCR5_FILTRE_TRENDS_CATEGORIES,
+.BLOCR6_TRENDS_TOXICITE,
+.BLOCR7_TRENDS_BOT_DETECTION {
+  height: 227px;
+}
+
+/*  ►►  MODIF : plus de place pour le radar des émotions  ◄◄  */
+.BLOCL6_SINGLE_SENTIMENTS {
+  height: 300px;   /* anciennement : 227px */
+}
+
+.BLOCR3_TRENDS_LISTE_KEYWORDS {
+  height: 352.5px;
+}
+
+/* ─── 5. Input URL ─────────────────────────────────────────────── */
+.App-inputbar {
+  display: flex;
+  width: 100%;
+}
+.url-input {
+  flex: 1;
+  padding: 10px 50px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px 0 0 4px;
+  outline: none;
+}
+.url-input:focus {
+  border-color: #27ae60;
+}
+.btn-analyze {
+  padding: 0 20px;
+  font-size: 14px;
+  background-color: #5ACEB7;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.btn-analyze:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+/* ─── 6. Contenu post ─────────────────────────────────────────── */
+.App-postcontent {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+.post-placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+.post-text {
+  white-space: pre-wrap;
+  line-height: 1.5;
+  color: #222;
+}
+.error-message {
+  color: #e74c3c;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* ─── 7. Metrics ─────────────────────────────────────────────── */
+.BLOCL3_DATA_POST {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+.metric-card {
+  background-color: #ffffff;
+  width: 120px;
+  padding: 15px 10px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+.metric-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #27ae60;
+}
+.metric-label {
+  font-size: 12px;
+  color: #555;
+  margin-top: 5px;
+}
+
+/* ─── Info-compte : mini-cartes compactes ────────────────────── */
+.info-metrics{
+  display:flex;
+  justify-content:center;
+  gap:16px;          /* écart un peu plus serré */
+  flex-wrap:nowrap;  /* reste sur une seule ligne */
+}
+
+.info-metrics .metric-card{
+  width: 96px;       /* plus étroit qu'avant (120 → 96) */
+  padding: 10px 6px; /* moins de padding interne */
+}
+
+.info-metrics .metric-value{
+  font-size: 20px;   /* valeur légèrement plus petite (28 → 20) */
+}
+
+/* si besoin, réduis aussi la taille du label : */
+/*
+.info-metrics .metric-label{
+  font-size: 12px;
+}
+*/
+
+
+/* ─── 9. Charts ─────────────────────────────────────────────── */
+.chart-wrapper { width: 100%; padding: 20px; box-sizing: border-box; }
+.chart-title   { font-size: 16px; margin-bottom: 10px; color: #222; text-align: center; }
+.chart-placeholder { color: #aaa; font-style: italic; text-align: center; }
+
+/* barre de toxicité */
+.chart-bar        { width: 100%; height: 20px; background-color: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
+.chart-bar-inner  { height: 100%; background-color: #e74c3c; transition: width 0.5s ease; }
+.chart-value      { text-align: center; font-size: 14px; color: #444; }
