@@ -3,13 +3,10 @@
 """
 build_keywords_results.py
 ─────────────────────────
-Calcule le top-20 mots par jour × catégorie (+ All) en excluant les stop-words
-et alimente keywords_results.
+Top-20 mots par jour × catégorie (+All) – cumulatif.
 
-Usage
------
-python build_keywords_results.py             # 25 jours (défaut)
-python build_keywords_results.py --days_back 0   # back-fill complet
+• Toutes les lignes keyword_status='pending' sont prises (days_back=0 par défaut)
+• Les occurrences sont AJOUTÉES lors d’un nouvel import sur la même journée.
 """
 
 import os, re, argparse, time
@@ -19,30 +16,36 @@ from psycopg2.extras import execute_batch
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 
-# ───────────────────────── Logger (rich si dispo) ───────────────────────
+# ─── Logging (rich → couleurs, sinon print) ────────────────────────────
 try:
     from rich.console import Console
-    from rich.table import Table
+    from rich.table   import Table
     from rich import box
     console = Console()
-    def log(msg): console.log(msg)
-    def rule(msg): console.rule(msg)
-    def summary(rows):
-        tbl = Table(title="Résumé keywords", box=box.SIMPLE, show_edge=False)
-        tbl.add_column("Étape"); tbl.add_column("Valeur", justify="right")
-        for k, v in rows: tbl.add_row(k, v)
-        console.print(tbl)
+    def log(m):  console.log(m)
+    def rule(m): console.rule(m)
+    def table(title, rows, cols):
+        t = Table(title=title, box=box.SIMPLE, show_edge=False)
+        for c in cols: t.add_column(c, justify="right" if c!="Date" else "left")
+        for r in rows: t.add_row(*map(str, r))
+        console.print(t)
 except ModuleNotFoundError:
     console = None
-    def log(msg): print(msg)
-    def rule(msg): print("="*10, msg, "="*10)
-    def summary(rows):
-        print("\nRésumé keywords")
-        for k, v in rows: print(f" - {k:<25} {v}")
+    def log(m):  print(m)
+    def rule(m): print(f"========== {m} ==========")
+    def table(title, rows, cols):
+        print(f"\n{title}"); print(" | ".join(cols))
+        for r in rows: print(" | ".join(map(str, r)))
 
-# ───────────────────────── Paramètres CLI ───────────────────────────────
-parser = argparse.ArgumentParser(description="Aggregation keywords_results")
-parser.add_argument("--days_back", type=int, default=25,
+# ─── tqdm (facultatif) ─────────────────────────────────────────────────
+try:
+    from tqdm import tqdm
+except ModuleNotFoundError:
+    tqdm = lambda x, **kw: x
+
+# ─── Arguments CLI ─────────────────────────────────────────────────────
+parser = argparse.ArgumentParser()
+parser.add_argument("--days_back", type=int, default=0,
                     help="Fenêtre en jours (0 = tout l'historique)")
 args   = parser.parse_args()
 WINDOW = args.days_back
@@ -55,29 +58,28 @@ ALLOWED_CATEGORIES = {
     'food_dining','travel_adventure','fashion_style','health_fitness','family'
 }
 
-# ───────────────────────── Connexion PG + engine ────────────────────────
-def get_conn_and_engine():
+# ─── Connexion PG + engine ─────────────────────────────────────────────
+def get_conn_engine():
     load_dotenv(r"C:\Users\dell\Desktop\DATA\SUP DE VINCI\08 - PROJET THAMALIEN\05_PIGMALION_V05_DEF\.env07")
-    cfg = dict(
-        user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"),
-        host=os.getenv("DB_HOST","localhost"), port=os.getenv("DB_PORT","5432"),
-        dbname=os.getenv("DB_NAME"))
-    conn = psycopg2.connect(**cfg)
-    url  = f"postgresql+psycopg2://{cfg['user']}:{cfg['password']}@{cfg['host']}:{cfg['port']}/{cfg['dbname']}"
-    return conn, create_engine(url)
+    cfg = {k: os.getenv(k) for k in ("DB_USER","DB_PASSWORD","DB_HOST","DB_PORT","DB_NAME")}
+    conn = psycopg2.connect(dbname=cfg["DB_NAME"], user=cfg["DB_USER"],
+                            password=cfg["DB_PASSWORD"], host=cfg["DB_HOST"],
+                            port=cfg["DB_PORT"])
+    eng  = create_engine(
+        f"postgresql+psycopg2://{cfg['DB_USER']}:{cfg['DB_PASSWORD']}"
+        f"@{cfg['DB_HOST']}:{cfg['DB_PORT']}/{cfg['DB_NAME']}")
+    return conn, eng
 
-conn, eng = get_conn_and_engine()
+conn, eng = get_conn_engine()
 
-# ───────────────────────── Stop-words & tokenisation ────────────────────
-STOPWORDS_CSV = r"data/Liste_Stopwords_V01_24.05.2025.csv"
-STOPWORDS = set(pd.read_csv(STOPWORDS_CSV, header=None)[0].str.lower())
+# ─── Stop-words & tokenisation ─────────────────────────────────────────
+STOPWORDS = set(pd.read_csv(r"data/Liste_Stopwords_V01_24.05.2025.csv",
+                            header=None)[0].str.lower())
 TOKEN_RE  = re.compile(r"[a-zàâçéèêëîïôûùüÿñæœ']{3,}", re.I)
+def tokenize(txt): return TOKEN_RE.findall(txt.lower())
 
-def tokenize(txt: str):
-    return TOKEN_RE.findall(txt.lower())
-
-# ───────────────────────── Lecture des posts pending ────────────────────
-date_clause = "" if WINDOW == 0 else \
+# ─── Posts à traiter ───────────────────────────────────────────────────
+date_clause = "" if WINDOW==0 else \
     f"AND pc.post_clean_date_nettoyage >= CURRENT_DATE - INTERVAL '{WINDOW} day'"
 
 QUERY = f"""
@@ -93,82 +95,67 @@ WHERE  pc.keyword_status = 'pending'
 
 t0 = time.time()
 df = pd.read_sql(QUERY, eng)
-initial_cnt = len(df)
-log(f"[yellow]Posts chargés : {initial_cnt:,}")
-
+log(f"[yellow]Posts chargés : {len(df):,}")
 if df.empty:
     log("[green]Aucun post à traiter → fin."); conn.close(); exit()
 
-# ───────────────────────── Marquer keyword_status=ok ────────────────────
+# ─── Bascule en ok immédiate ───────────────────────────────────────────
 with conn, conn.cursor() as cur:
     execute_batch(cur,
         "UPDATE post_clean SET keyword_status='ok' WHERE post_url=%(post_url)s;",
         df[['post_url']].drop_duplicates().to_dict('records'))
-conn.commit()
-log(f"[green]Posts marqués ok : {cur.rowcount:,}")
+conn.commit(); log(f"[green]Posts marqués ok : {cur.rowcount:,}")
 
-# ───────────────────────── Filtre catégories ────────────────────────────
+# ─── Filtre catégories ─────────────────────────────────────────────────
 df = df[df['cat'].isin(ALLOWED_CATEGORIES)]
-log(f"[yellow]Après filtre catégories : {len(df):,} posts "
-    f"({initial_cnt-len(df):,} exclus)")
-
+log(f"[yellow]Après filtre catégories : {len(df):,} posts")
 if df.empty:
     log("[red]0 post dans les catégories retenues → fin."); conn.close(); exit()
 
-# ───────────────────────── Comptage occurrences ─────────────────────────
-records = []
-for d, cat, txt in zip(df["d"], df["cat"], df["post_clean_contenu"]):
-    tokens = [t for t in tokenize(txt) if t not in STOPWORDS]
-    for tok in tokens:
-        records.append((d, cat, tok))
-        records.append((d, "All", tok))
+table("Posts par jour", df.groupby('d').size().reset_index(name='posts').values,
+      ["Date","Posts"])
+
+# ─── Comptage tokens ───────────────────────────────────────────────────
+records, token_total = [], 0
+for d, cat, txt in tqdm(zip(df["d"], df["cat"], df["post_clean_contenu"]),
+                        total=len(df), desc="Tokenisation"):
+    words = [w for w in tokenize(txt) if w not in STOPWORDS]
+    token_total += len(words)
+    for w in words:
+        records.append((d, cat, w))
+        records.append((d, "All", w))
+log(f"[cyan]Tokens retenus : {token_total:,}")
 
 kw_df = (pd.DataFrame(records, columns=['d','cat','kw'])
-           .groupby(['d','cat','kw'])
-           .size()
-           .reset_index(name='occ'))
-
+           .groupby(['d','cat','kw']).size().reset_index(name='occ'))
 kw_df['rank'] = (kw_df.sort_values(['d','cat','occ'], ascending=[True,True,False])
-                          .groupby(['d','cat'])
-                          .cumcount() + 1)
+                       .groupby(['d','cat']).cumcount() + 1)
 kw_top = kw_df[kw_df['rank'] <= TOP_N]
-log(f"[yellow]Tokens distincts gardés (≤TOP{TOP_N}) : {len(kw_top):,}")
+table("UPSERT par jour",
+      kw_top.groupby('d').size().reset_index(name='UPSERTs').values,
+      ["Date","Lignes"])
 
-# ───────────────────────── UPSERT keywords_results ──────────────────────
+# ─── UPSERT cumulatif ──────────────────────────────────────────────────
 UPSERT = """
-INSERT INTO keywords_results (
-  post_date, categorie, keyword, ranking, occurrence)
-VALUES (
-  %(d)s, %(cat)s, %(kw)s, %(rank)s, %(occ)s)
-ON CONFLICT (post_date, categorie, keyword) DO UPDATE
-  SET ranking = EXCLUDED.ranking,
-      occurrence = EXCLUDED.occurrence;
+INSERT INTO keywords_results (post_date,categorie,keyword,ranking,occurrence)
+VALUES (%(d)s,%(cat)s,%(kw)s,%(rank)s,%(occ)s)
+ON CONFLICT (post_date,categorie,keyword) DO UPDATE
+  SET ranking    = LEAST(keywords_results.ranking, EXCLUDED.ranking),
+      occurrence = keywords_results.occurrence + EXCLUDED.occurrence;
 """
-rows = kw_top.to_dict('records')
 with conn, conn.cursor() as cur:
-    execute_batch(cur, UPSERT, rows)
-conn.commit()
-log(f"[green]Lignes UPSERT envoyées : {len(rows):,}")
+    execute_batch(cur, UPSERT, kw_top.to_dict('records'))
+conn.commit();  log(f"[green]UPSERT effectué : {len(kw_top):,} lignes")
 
-# Compte réel dans la fenêtre
-with conn, conn.cursor() as cur:
-    cur.execute("""
-        SELECT COUNT(*) FROM keywords_results
-        WHERE post_date >= CURRENT_DATE - INTERVAL %s
-    """, (f"{WINDOW} day",) if WINDOW else ("10000 day",))
-    db_rows = cur.fetchone()[0]
-log(f"[green]Lignes présentes dans keywords_results (fenêtre) : {db_rows:,}")
-
-# ───────────────────────── Résumé final ────────────────────────────────
+# ─── Résumé ────────────────────────────────────────────────────────────
 elapsed = time.time() - t0
-summary([
-    ("Posts lus",              f"{initial_cnt:,}"),
-    ("Posts conservés",        f"{len(df):,}"),
-    ("Triplets jour×cat×kw",   f"{len(kw_df):,}"),
-    ("Lignes UPSERT envoyées", f"{len(rows):,}"),
-    ("Présentes en DB",        f"{db_rows:,}"),
-    ("Durée (s)",              f"{elapsed:.1f}")
-])
+table("Résumé keywords", [
+    ["Posts analysés",         f"{len(df):,}"],
+    ["Tokens retenus",         f"{token_total:,}"],
+    ["Triplets (d×cat×kw)",    f"{len(kw_df):,}"],
+    [f"Lignes TOP-{TOP_N}",    f"{len(kw_top):,}"],
+    ["Durée (s)",              f"{elapsed:.1f}"]
+], ["Étape","Valeur"])
 
 conn.close()
 rule("[bold green]Terminé")
