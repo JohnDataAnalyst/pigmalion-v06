@@ -66,6 +66,37 @@ def count_posts(period: str, category: str):
         cur.execute(sql, params)
         return cur.fetchone()[0]
 
+def top_keywords(period: str, category: str, limit: int = 20):
+    """Retourne les mots-clés les plus fréquents."""
+    today = date.today()
+    if period == "today":
+        start = today
+    elif period == "week":
+        start = today - timedelta(days=6)
+    else:  # "all"
+        start = None
+
+    where = ["categorie = %s"]
+    params = [category]
+    if start:
+        where.append("post_date >= %s")
+        params.append(start)
+
+    sql = f"""
+        SELECT keyword, SUM(occurrence) AS occ
+        FROM keywords_results
+        WHERE {' AND '.join(where)}
+        GROUP BY keyword
+        ORDER BY occ DESC
+        LIMIT %s
+    """
+
+    params.append(limit)
+
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(sql, params)
+        return cur.fetchall()
+
 # ──────── endpoints ───────────────────────────────────────────────────
 @app.get("/health")
 async def health_check():
@@ -93,6 +124,25 @@ async def trends_count(
     try:
         n = count_posts(period, category)
         return {"period": period, "category": category, "posts": n}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/trends/keywords")
+async def trends_keywords(
+    period: str = Query(..., pattern="^(today|week|all)$"),
+    category: str = Query(...),
+    limit: int = 20,
+):
+    """Renvoie la liste des mots-clés les plus fréquents."""
+    if category not in ALLOWED_CATEGORIES:
+        raise HTTPException(status_code=400, detail="Catégorie inconnue")
+    try:
+        rows = top_keywords(period, category, limit)
+        return [
+            {"rank": i + 1, "keyword": kw, "occurrence": occ}
+            for i, (kw, occ) in enumerate(rows)
+        ]
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
