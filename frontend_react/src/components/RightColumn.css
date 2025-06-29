@@ -29,3 +29,20 @@
   border-radius:.5rem;
   min-height:4.5rem;
 }
+/* Grille 2 colonnes de 10 lignes */
+.keyword-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 32px;      /* espace horizontal un peu plus large */
+  margin-top: 12px;
+}
+
+.keyword-grid .rank {
+  font-weight: 600;
+  margin-right: 4px;
+}
+.section-title {
+  margin-top: 24px;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
