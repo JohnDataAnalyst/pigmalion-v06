@@ -14,12 +14,11 @@ export default function TrendsEmotion({ period, category }) {
     setLoading(true);
     axios
       .get(`${API_BASE}/trends/emotion`, {
-        params: { period, category },
+        params: { period, category: category.toLowerCase() }, // ✅ CASSAGE FORCÉ
       })
       .then((response) => {
         const emotionList = response.data;
 
-        // Conversion en format compatible EmotionRadarChart
         const mappedData = {};
         emotionList.forEach(({ label, score }) => {
           mappedData[`out_post_score_sentiments_${label}`] = score;

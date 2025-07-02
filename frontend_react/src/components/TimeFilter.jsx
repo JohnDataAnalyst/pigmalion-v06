@@ -1,10 +1,5 @@
-/* TimeFilter.tsx */
-type Props = {
-  value: "today" | "week" | "all";
-  onChange: (v: "today" | "week" | "all") => void;
-};
-
-export default function TimeFilter({ value, onChange }: Props) {
+/* TimeFilter.jsx */
+export default function TimeFilter({ value, onChange }) {
   const opts = [
     { lab: "Today",     v: "today" },
     { lab: "This week", v: "week"  },

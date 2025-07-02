@@ -1,6 +1,8 @@
 # backend/api/Trends/api_trends.py
+
 from fastapi import APIRouter, Query, HTTPException
 from datetime import date, timedelta
+from enum import Enum
 import psycopg2
 import os
 from dotenv import load_dotenv
@@ -17,32 +19,37 @@ PG_DSN = os.getenv("PG_DSN") or (
     f"port={os.getenv('DB_PORT')}"
 )
 
-ALLOWED_CATEGORIES = {
-    "news_social_concern", "arts_entertainment", "sports_gaming", "pop_culture",
-    "learning_educational", "science_technology", "business_entrepreneurship",
-    "food_dining", "travel_adventure", "fashion_style", "health_fitness", "family", "all"
-}
-
+# Définition de l'énumération des catégories autorisées
+class CategoryEnum(str, Enum):
+    all = "all"
+    news_social_concern = "news_social_concern"
+    arts_entertainment = "arts_entertainment"
+    sports_gaming = "sports_gaming"
+    pop_culture = "pop_culture"
+    learning_educational = "learning_educational"
+    science_technology = "science_technology"
+    business_entrepreneurship = "business_entrepreneurship"
+    food_dining = "food_dining"
+    travel_adventure = "travel_adventure"
+    fashion_style = "fashion_style"
+    health_fitness = "health_fitness"
+    family = "family"
 
 def get_connection():
     return psycopg2.connect(PG_DSN)
 
-
 @router.get("/trends/emotion")
 def trends_emotion(
     period: str = Query(..., pattern="^(today|week|all)$"),
-    category: str = Query(...)
+    category: CategoryEnum = Query(...)
 ):
-    if category not in ALLOWED_CATEGORIES:
-        raise HTTPException(status_code=400, detail="Catégorie inconnue")
-
     today = date.today()
     start = today if period == "today" else today - timedelta(days=6) if period == "week" else None
 
     where, params = ["1=1"], []
-    if category != "all":
-        where.append("categorie = %s")
-        params.append(category)
+    if category != CategoryEnum.all:
+        where.append("LOWER(categorie) = LOWER(%s)")
+        params.append(category.value)
     if start:
         where.append("post_date >= %s")
         params.append(start)
