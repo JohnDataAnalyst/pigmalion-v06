@@ -35,6 +35,10 @@ app.add_middleware(
 )
 app.include_router(keywords_router)
 
+from .api.Trends.api_trends import router as trends_router
+app.include_router(trends_router)
+
+
 # ───── helpers SQL ──────────────────────────────────────────
 def get_connection():
     return psycopg2.connect(PG_DSN)
