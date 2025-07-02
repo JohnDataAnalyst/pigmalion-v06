@@ -53,13 +53,13 @@ def load_mode():
 
 def main():
     os.chdir(os.path.dirname(__file__))  # exécuter à la racine du projet
-    mode = input("🔧 Que voulez-vous faire ? [save / load] : ").strip().lower()
-    if mode == "save":
+    mode = input("🔧 Que voulez-vous faire ? [s = save / l = load] : ").strip().lower()
+    if mode == "s":
         save_mode()
-    elif mode == "load":
+    elif mode == "l":
         load_mode()
     else:
-        print("❌ Mode invalide. Tapez 'save' ou 'load'.")
+        print("❌ Mode invalide. Tapez 's' ou 'l'.")
 
 if __name__ == "__main__":
     main()
