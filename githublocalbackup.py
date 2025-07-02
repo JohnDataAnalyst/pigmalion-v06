@@ -42,8 +42,9 @@ def load_mode():
         if 0 <= index < len(tags):
             tag_to_load = tags[index]
             print(f"\n🔄 Restauration du tag : {tag_to_load}\n")
-            run("git stash push -m 'backup avant restauration'")
-            run(f"git checkout {tag_to_load}")  # détaché
+            run("git stash push -m 'sauvegarde automatique avant restauration'")
+            run(f"git checkout {tag_to_load}")
+            run("git clean -fd")  # suppression des fichiers non suivis
             print("✅ Restauration terminée. Vous êtes en mode détaché.")
             print("ℹ️ Tapez `git checkout main` pour revenir à la branche principale.")
         else:
