@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import KeywordList from "./KeywordList";
+import TrendsEmotion from "./TrendsEmotion";  // ✅ nom corrigé
 import "./RightColumn.css";
 
 const CATEGORIES = [
@@ -9,7 +10,6 @@ const CATEGORIES = [
   "food_dining", "travel_adventure", "fashion_style", "health_fitness", "family"
 ];
 
-// Utilise la même constante API que dans App.js
 const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000";
 
 export default function RightColumn({ dateFilter, setDateFilter }) {
@@ -75,7 +75,8 @@ export default function RightColumn({ dateFilter, setDateFilter }) {
         <KeywordList period={dateFilter} category={category} />
       </div>
 
-      <div className="BLOCR4_TRENDS_SENTIMENTS card" />
+      <TrendsEmotion period={dateFilter} category={category} /> {/* ✅ radar émotions */}
+
       <div className="BLOCR6_TRENDS_TOXICITE card" />
       <div className="BLOCR7_TRENDS_BOT_DETECTION card" />
     </div>
