@@ -46,3 +46,42 @@
   font-weight: 700;
   font-size: 1.1rem;
 }
+.keyword-grid {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.keyword-grid .column {
+  width: 48%;
+}
+
+.keyword-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.keyword-text {
+  font-weight: 400;
+}
+
+.rank {
+  font-weight: 600;
+  margin-right: 4px;
+}
+.filter-group {
+  display: flex;
+  justify-content: center;
+}
+.BLOCR1_TRENDS_FILTRE_DATE {
+  display: flex;
+  align-items: center;     /* centrage vertical */
+  justify-content: center; /* centrage horizontal */
+  height: auto;            /* ← empêche le bloc de forcer une hauteur excessive */
+  min-height: 4.5rem;      /* ← assure une base cohérente */
+}

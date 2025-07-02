@@ -1,40 +1,86 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import text
-from db import get_db    # ton utilitaire dépendance
+# 09_API_TRENDS.py
 
-router = APIRouter(prefix="/trends", tags=["trends"])
+from fastapi import APIRouter, Query, HTTPException
+from datetime import date, timedelta
+import psycopg2
+import os
+from dotenv import load_dotenv
 
-def _date_min(range_: str):
-    from datetime import date, timedelta
+# ───── CONFIG .env ─────
+load_dotenv()
+PG_DSN = os.getenv("PG_DSN")
+
+# ────── CATEGORIES AUTORISÉES ──────
+ALLOWED_CATEGORIES = {
+    "news_social_concern", "arts_entertainment", "sports_gaming", "pop_culture",
+    "learning_educational", "science_technology", "business_entrepreneurship",
+    "food_dining", "travel_adventure", "fashion_style", "health_fitness", "family"
+}
+
+router = APIRouter()
+
+# ────── Connexion DB ──────
+def get_connection():
+    return psycopg2.connect(PG_DSN)
+
+# ────── Helper : dates ──────
+def get_start_date(period: str) -> date | None:
     today = date.today()
-    if range_ == "today": return today
-    if range_ == "week":  return today - timedelta(days=7)
-    return None           # 'all'
+    if period == "today":
+        return today
+    elif period == "week":
+        return today - timedelta(days=6)
+    return None  # all time
 
-@router.get("/summary")
-def summary(range: str = "all", db = Depends(get_db)):
-    dmin = _date_min(range)
-    row = db.execute(text("""
-        SELECT SUM(post_occurrence) AS nb
-        FROM   trends_results
-        WHERE  (:dmin IS NULL OR post_date >= :dmin)
-          AND  categorie = 'All';
-    """), {"dmin": dmin}).one()
-    return {"range": range, "post_count": row.nb or 0}
+# ────── ENDPOINT : émotions agrégées ──────
+@router.get("/trends/emotions")
+def get_emotions(
+    period: str = Query(..., pattern="^(today|week|all)$"),
+    category: str = Query(...)
+):
+    if category != "all" and category not in ALLOWED_CATEGORIES:
+        raise HTTPException(status_code=400, detail="Catégorie inconnue")
 
-@router.get("/top_keywords")
-def top_keywords(range: str = "all", limit: int = 20, db = Depends(get_db)):
-    dmin = _date_min(range)
-    rows = db.execute(text("""
-        SELECT keyword, SUM(occurrence) AS cnt
-        FROM   keywords_results
-        WHERE  (:dmin IS NULL OR post_date >= :dmin)
-          AND  categorie = 'All'
-        GROUP  BY keyword
-        ORDER  BY cnt DESC
-        LIMIT  :limit;
-    """), {"dmin": dmin, "limit": limit}).fetchall()
-    return [
-        {"rank": i+1, "keyword": r.keyword, "count": r.cnt}
-        for i, r in enumerate(rows)
-    ]
+    start_date = get_start_date(period)
+    conditions = []
+    params = []
+
+    if category != "all":
+        conditions.append("categorie = %s")
+        params.append(category)
+
+    if start_date:
+        conditions.append("post_date >= %s")
+        params.append(start_date)
+
+    where_clause = "WHERE " + " AND ".join(conditions) if conditions else ""
+    sql = f"""
+        SELECT
+            ROUND(AVG(mean_anger)::numeric, 4),
+            ROUND(AVG(mean_disgust)::numeric, 4),
+            ROUND(AVG(mean_fear)::numeric, 4),
+            ROUND(AVG(mean_joy)::numeric, 4),
+            ROUND(AVG(mean_surprise)::numeric, 4)
+        FROM trends_results
+        {where_clause}
+    """
+
+    try:
+        with get_connection() as conn, conn.cursor() as cur:
+            cur.execute(sql, params)
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(status_code=404, detail="Aucune donnée")
+            return {
+                "period": period,
+                "category": category,
+                "emotions": {
+                    "anger": row[0],
+                    "disgust": row[1],
+                    "fear": row[2],
+                    "joy": row[3],
+                    "surprise": row[4],
+                }
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
