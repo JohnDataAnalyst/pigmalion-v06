@@ -1,46 +1,38 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-import "./RightColumn.css";           // on réutilise la feuille existante
+import React, { useEffect, useState } from "react";
 
-export default function KeywordList({ period, category }) {
+export default function KeywordList({ category, period }) {
   const [keywords, setKeywords] = useState([]);
 
   useEffect(() => {
+    if (!category || !period) return;
+
     const fetchKeywords = async () => {
       try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_API_URL || ""}/api/keywords`,
-          { params: { period, category } }
+        const response = await fetch(
+          `http://localhost:8000/api/keywords?period=${period}&category=${category}`
         );
-        setKeywords(res.data);
-      } catch (err) {
-        console.error(err);
+        const data = await response.json();
+        setKeywords(data);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des mots-clés :", error);
         setKeywords([]);
       }
     };
-    fetchKeywords();
-  }, [period, category]);
 
-  // 2 colonnes, 10 lignes chacune
-  const left = keywords.slice(0, 10);
-  const right = keywords.slice(10, 20);
+    fetchKeywords();
+  }, [category, period]);
 
   return (
     <div className="keyword-grid">
-      <div>
-        {left.map((k) => (
-          <div key={k.rank}>
-            <span className="rank">{k.rank}</span>&nbsp;{k.keyword}
+      {keywords.length === 0 ? (
+        <div>Aucun mot-clé trouvé.</div>
+      ) : (
+        keywords.map((item, idx) => (
+          <div key={idx}>
+            <span className="rank">{idx + 1}.</span> {item.keyword} ({item.occurrence || 0})
           </div>
-        ))}
-      </div>
-      <div>
-        {right.map((k) => (
-          <div key={k.rank}>
-            <span className="rank">{k.rank}</span>&nbsp;{k.keyword}
-          </div>
-        ))}
-      </div>
+        ))
+      )}
     </div>
   );
 }

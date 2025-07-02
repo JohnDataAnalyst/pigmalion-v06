@@ -54,4 +54,5 @@ def top_keywords(
         cur.execute(sql, params)
         rows = cur.fetchall()
 
-    return [{"rank": r[2], "keyword": r[0]} for r in rows]
+    return [{"rank": r[2], "keyword": r[0], "occurrence": r[1] or 0} for r in rows]
+
