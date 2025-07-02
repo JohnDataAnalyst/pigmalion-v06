@@ -10,29 +10,26 @@ def run(cmd):
 
 def list_tags():
     stdout, _ = run("git tag --sort=creatordate")
-    tags = stdout.splitlines()
-    return tags
+    return stdout.splitlines()
 
 def save_mode():
-    print("\n💾 Sauvegarde du projet Git\n")
-    description = input("📝 Entrez une description courte : ").strip().lower()
-    description = description.replace(" ", "_").replace("é", "e").replace("à", "a").replace("è", "e")
+    print("\n💾 Sauvegarde LOCALE Git\n")
+    description = input("📝 Entrez une description courte : ").strip().lower().replace(" ", "_").replace("é", "e").replace("à", "a")
     timestamp = datetime.now().strftime("%Y_%m_%d_%Hh%M")
     tag_name = f"sauvegarde_{timestamp}_{description}"
 
     run("git add .")
-    run(f"git commit -m \"💾 Sauvegarde automatique : {description}\"")
+    run(f'git commit -m "💾 Sauvegarde locale : {description}"')
     run(f"git tag {tag_name}")
-    run("git push")
-    run(f"git push origin {tag_name}")
 
-    print(f"\n✅ Sauvegarde terminée avec le tag : {tag_name}\n")
+    print(f"\n✅ Sauvegarde locale créée avec le tag : {tag_name}")
+    print("ℹ️  Aucune donnée n’a été envoyée à GitHub.\n")
 
 def load_mode():
-    print("\n📦 Chargement d'une sauvegarde\n")
+    print("\n📦 Chargement d'une sauvegarde locale\n")
     tags = list_tags()
     if not tags:
-        print("Aucune sauvegarde disponible.")
+        print("❌ Aucune sauvegarde disponible.")
         return
 
     for i, tag in enumerate(tags, start=1):
@@ -43,24 +40,24 @@ def load_mode():
         index = int(choice) - 1
         if 0 <= index < len(tags):
             tag_to_load = tags[index]
-            print(f"\n🔄 Restauration du tag : {tag_to_load}\n")
-            run("git checkout main")  # pour éviter d'être en détachement
+            print(f"\n🔄 Restauration du tag local : {tag_to_load}\n")
+            run("git checkout main")  # éviter l'état détaché
             run(f"git reset --hard {tag_to_load}")
-            print("✅ Restauration terminée. Recharger VS Code si nécessaire.")
+            print("✅ Projet restauré localement.")
         else:
             print("❌ Numéro invalide.")
     except ValueError:
         print("❌ Entrée non valide.")
 
 def main():
-    os.chdir(os.path.dirname(__file__))  # exécuter à la racine du script
-    mode = input("🔧 Que voulez-vous faire ? [save / load] : ").strip().lower()
-    if mode == "save":
+    os.chdir(os.path.dirname(__file__))  # se placer à la racine du projet
+    mode = input("🔧 Que voulez-vous faire ? [s = save / l = load] : ").strip().lower()
+    if mode == "s":
         save_mode()
-    elif mode == "load":
+    elif mode == "l":
         load_mode()
     else:
-        print("❌ Mode invalide. Tapez 'save' ou 'load'.")
+        print("❌ Entrée non reconnue. Tape 's' pour sauvegarder ou 'l' pour charger une version.")
 
 if __name__ == "__main__":
     main()
