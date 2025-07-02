@@ -1,5 +1,4 @@
 import subprocess
-import sys
 import os
 from datetime import datetime
 
@@ -10,12 +9,12 @@ def run(cmd):
 
 def list_tags():
     stdout, _ = run("git tag --sort=creatordate")
-    tags = stdout.splitlines()
-    return tags
+    return stdout.splitlines()
 
 def save_mode():
     print("\n💾 Sauvegarde du projet Git\n")
-    description = input("📝 Entrez une description courte : ").strip().lower().replace(" ", "_").replace("é", "e").replace("à", "a")
+    description = input("📝 Entrez une description courte : ").strip().lower()
+    description = description.replace(" ", "_").replace("é", "e").replace("è", "e").replace("à", "a").replace("ç", "c")
     timestamp = datetime.now().strftime("%Y_%m_%d_%Hh%M")
     tag_name = f"sauvegarde_{timestamp}_{description}"
 
@@ -43,9 +42,10 @@ def load_mode():
         if 0 <= index < len(tags):
             tag_to_load = tags[index]
             print(f"\n🔄 Restauration du tag : {tag_to_load}\n")
-            run("git checkout main")  # pour éviter d'être en détachement
-            run(f"git reset --hard {tag_to_load}")
-            print("✅ Restauration terminée. Recharger VS Code si nécessaire.")
+            run("git stash push -m 'backup avant restauration'")
+            run(f"git checkout {tag_to_load}")  # détaché
+            print("✅ Restauration terminée. Vous êtes en mode détaché.")
+            print("ℹ️ Tapez `git checkout main` pour revenir à la branche principale.")
         else:
             print("❌ Numéro invalide.")
     except ValueError:
