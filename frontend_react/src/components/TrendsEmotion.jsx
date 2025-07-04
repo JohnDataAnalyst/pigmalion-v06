@@ -14,7 +14,7 @@ export default function TrendsEmotion({ period, category }) {
     setLoading(true);
     axios
       .get(`${API_BASE}/trends/emotion`, {
-        params: { period, category: category.toLowerCase() }, // ✅ CASSAGE FORCÉ
+        params: { period, category },
       })
       .then((response) => {
         const emotionList = response.data;
